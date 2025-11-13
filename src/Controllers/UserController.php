@@ -15,4 +15,10 @@ class UserController
     {
         return "Showing user #" . $id;
     }
+
+    public function create($name)
+    {
+        $user = new User($name);
+        return "Created user: " . $user->getName();
+    }
 }
