@@ -1,0 +1,19 @@
+# Docker data
+data/
+volumes/
+
+# Environment
+.env
+
+# Logs
+*.log
+
+# Docker
+.dockerignore
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
