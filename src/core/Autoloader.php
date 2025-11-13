@@ -29,7 +29,7 @@ class Autoloader {
     }
 
     private static function loadMappedFile($prefix, $relativeClass) {
-        if (isset(self::$prefixes[$prefix])) {
+        if (!isset(self::$prefixes[$prefix])) {
             return false;
         }
 
