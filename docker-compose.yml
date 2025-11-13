@@ -44,7 +44,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - ./volumes/postgres:/var/lib/postgresql/data
+      - ./volumes/postgres:/var/lib/postgresql
     networks:
       - app-network
 

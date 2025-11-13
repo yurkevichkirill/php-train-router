@@ -7,10 +7,26 @@ RUN apk add --no-cache \
     libjpeg-turbo-dev \
     libpng-dev \
     libpq-dev \
-    curl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd \
-    && docker-php-ext-install pdo pdo_pgsql
+    curl-dev \
+    libzip-dev \
+    libxml2-dev \
+    oniguruma-dev \
+    mysql-client \
+    postgresql-dev
+
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        gd \
+        mbstring \
+        mysqli \
+        pdo_mysql \
+        pdo_pgsql \
+        curl \
+        xml \
+        zip \
+        bcmath \
+        intl \
+        opcache
 
 RUN pecl install xdebug \
     && docker-php-ext-enable xdebug
@@ -22,4 +38,3 @@ WORKDIR /var/www
 EXPOSE 9000
 
 CMD ["php-fpm"]
-
