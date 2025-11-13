@@ -1,7 +1,10 @@
-up:
+install:
+	docker compose up -d --build
+
+start:
 	docker compose up -d
 
-down:
+stop:
 	docker compose down
 
 build:
@@ -14,13 +17,13 @@ logs:
 	docker compose logs -f
 
 php:
-	docker compose exec php-fpm sh
+	docker compose exec -it php-fpm sh
 
 db:
-	docker compose exec postgres psql -U $(shell grep POSTGRES_USER .env | cut -d '=' -f2)
+	docker compose exec -it postgres psql -U $(shell grep POSTGRES_USER .env | cut -d '=' -f2)
 
 redis:
-	docker compose exec redis redis-cli
+	docker compose exec -it redis redis-cli
 
 composer-install:
 	docker compose exec php composer install
