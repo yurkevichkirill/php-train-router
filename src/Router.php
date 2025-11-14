@@ -30,7 +30,6 @@ class Router
     {
         $segments = explode('/', trim($uri, '/'));
 
-        // Заменяем последний сегмент на {id} для создания ключа
         if (count($segments) > 1) {
             $segments[count($segments) - 1] = '{id}';
             return '/' . implode('/', $segments);
