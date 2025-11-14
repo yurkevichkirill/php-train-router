@@ -1,9 +1,6 @@
 data/
 volumes/
 
-.env
-.env.*.local
-
 *.log
 logs/
 
