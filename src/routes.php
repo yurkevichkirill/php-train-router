@@ -16,12 +16,9 @@ return [
             echo json_encode(['status' => 'OK']);
         },
 
-        '#^/users/(?P<id>[^/]+)$#' => [UserController::class, 'show'],
-        '#^/products/(?P<id>[^/]+)$#' => function ($id) {
+        '/users/{id}' => [UserController::class, 'show'],
+        '/products/{id}' => function ($id) {
             echo json_encode(['message' => "Product $id"]);
-        },
-        '#^/users/(?P<userId>[^/]+)/posts/(?P<postId>[^/]+)$#' => function ($userId, $postId) {
-            echo json_encode(['user' => $userId, 'post' => $postId]);
         }
     ],
 
@@ -30,10 +27,10 @@ return [
     ],
 
     'PUT' => [
-        '#^/users/(?P<id>[^/]+)$#' => [UserController::class, 'update']
+        '/users/{id}' => [UserController::class, 'update']
     ],
 
     'DELETE' => [
-        '#^/users/(?P<id>[^/]+)$#' => [UserController::class, 'delete']
+        '/users/{id}' => [UserController::class, 'delete']
     ]
 ];

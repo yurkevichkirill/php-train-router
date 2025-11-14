@@ -15,21 +15,34 @@ class Router
             return;
         }
 
-        if (isset($routes[$method])) {
-            foreach ($routes[$method] as $pattern => $handler) {
-                if (strpos($pattern, '#^') !== 0) {
-                    continue;
-                }
-
-                if (preg_match($pattern, $uri, $matches)) {
-                    $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
-                    $this->callHandler($handler, $params);
-                    return;
-                }
-            }
+        $dynamicKey = $this->createDynamicKey($uri);
+        if (isset($routes[$method][$dynamicKey])) {
+            $handler = $routes[$method][$dynamicKey];
+            $param = $this->extractParam($uri);
+            $this->callHandler($handler, [$param]);
+            return;
         }
 
         $this->notFound();
+    }
+
+    private function createDynamicKey(string $uri): string
+    {
+        $segments = explode('/', trim($uri, '/'));
+
+        // Заменяем последний сегмент на {id} для создания ключа
+        if (count($segments) > 1) {
+            $segments[count($segments) - 1] = '{id}';
+            return '/' . implode('/', $segments);
+        }
+
+        return $uri;
+    }
+
+    private function extractParam(string $uri): string
+    {
+        $segments = explode('/', trim($uri, '/'));
+        return end($segments);
     }
 
     private function normalizePath($path) {
