@@ -4,42 +4,80 @@ namespace App;
 
 class Router
 {
-    private $routes = [];
-
-    public function addRoutes(array $routes) {
-        foreach ($routes as $route) {
-            list($method, $path, $handler) = $route;
-            $method = strtoupper($method);
-
-            $pattern = $this->pathToPattern($path);
-
-            $this->routes[$method][$pattern] = [
-                'handler' => $handler,
-                'original_path' => $path,
-            ];
-        }
-    }
-
-    public function dispatch() {
+    public function dispatch(array $routes) {
         $method = $_SERVER['REQUEST_METHOD'];
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $uri = $this->normalizePath($uri);
 
-        if (isset($this->routes[$method])) {
-            foreach ($this->routes[$method] as $pattern => $routeData) {
-                if(preg_match($pattern, $uri, $matches)) {
+        $searchPattern = $this->uriToSearchPattern($uri);
+
+        foreach ($routes as $route) {
+            list($routeMethod, $routePath, $handler) = $route;
+
+            if (strtoupper($routeMethod) !== $method) {
+                continue;
+            }
+
+            if ($this->isRouteCompatible($routePath, $searchPattern, $uri)) {
+                $pattern = $this->pathToPattern($routePath);
+
+                if (preg_match($pattern, $uri, $matches)) {
                     $params = [];
-                    foreach($matches as $key => $value) {
-                        if(is_string($key)) {
+                    foreach ($matches as $key => $value) {
+                        if (is_string($key)) {
                             $params[$key] = $value;
                         }
                     }
-                    $this->callHandler($routeData['handler'], $params);
+                    $this->callHandler($handler, $params);
                     return;
                 }
             }
         }
 
         $this->notFound();
+    }
+
+    private function uriToSearchPattern($uri) {
+        $parts = explode('/', trim($uri, '/'));
+        $patternParts = [];
+
+        foreach ($parts as $part) {
+            if (empty($part)) continue;
+
+            if (is_numeric($part)) {
+                $patternParts[] = '\d+';
+            } else {
+                $patternParts[] = '[^/]+';
+            }
+        }
+
+        if (empty($patternParts)) {
+            return '#^/$#';
+        }
+
+        return '#^/' . implode('/', $patternParts) . '$#';
+    }
+
+    private function isRouteCompatible($routePath, $searchPattern, $uri) {
+        $uriSegments = count(array_filter(explode('/', $uri)));
+        $routeSegments = count(array_filter(explode('/', $routePath)));
+
+        if ($uriSegments !== $routeSegments) {
+            return false;
+        }
+
+        $routeTemplate = preg_replace('/\{[^}]+\}/', '[^/]+', $routePath);
+        $routeTemplate = '#^' . $routeTemplate . '$#';
+
+        return preg_match($routeTemplate, $uri);
+    }
+
+    private function normalizePath($path) {
+        $path = preg_replace('#/+#', '/', $path);
+        if ($path !== '/' && substr($path, -1) === '/') {
+            $path = rtrim($path, '/');
+        }
+        return $path;
     }
 
     private function pathToPattern($path) {
@@ -62,6 +100,7 @@ class Router
 
     private function notFound() {
         http_response_code(404);
+        header('Content-Type: application/json');
         echo json_encode(['error' => 'Not Found']);
     }
 }

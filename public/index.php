@@ -1,12 +1,10 @@
 <?php
 
-require_once "autoload.php";
+require_once 'autoload.php';
 
 use App\Router;
 
+$routes = require __DIR__ . '/../src/routes.php';
+
 $router = new Router();
-
-$routes = require __DIR__ . "/../src/routes.php";
-$router->addRoutes($routes);
-
-$router->dispatch();
+$router->dispatch($routes);
