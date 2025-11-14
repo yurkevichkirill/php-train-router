@@ -6,43 +6,36 @@ class Router
 {
     private $routes = [];
 
-    public function get($path, $handler) {
-        $this->routes['GET'][$path] = $handler;
-    }
+    public function addRoutes(array $routes) {
+        foreach ($routes as $route) {
+            list($method, $path, $handler) = $route;
+            $method = strtoupper($method);
 
-    public function post($path, $handler) {
-        $this->routes['POST'][$path] = $handler;
-    }
+            $pattern = $this->pathToPattern($path);
 
-    public function put($path, $handler) {
-        $this->routes['PUT'][$path] = $handler;
-    }
-
-    public function delete($path, $handler) {
-        $this->routes['DELETE'][$path] = $handler;
+            $this->routes[$method][$pattern] = [
+                'handler' => $handler,
+                'original_path' => $path,
+            ];
+        }
     }
 
     public function dispatch() {
         $method = $_SERVER['REQUEST_METHOD'];
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-        if (isset($this->routes[$method][$uri])) {
-            $handler = $this->routes[$method][$uri];
-            $this->callHandler($handler, []);
-            return;
-        }
-
-        foreach ($this->routes[$method] ?? [] as $path => $handler) {
-            $pattern = $this->pathToPattern($path);
-            if (preg_match($pattern, $uri, $matches)) {
-                $params = [];
-                foreach ($matches as $key => $value) {
-                    if (is_string($key)) {
-                        $params[$key] = $value;
+        if (isset($this->routes[$method])) {
+            foreach ($this->routes[$method] as $pattern => $routeData) {
+                if(preg_match($pattern, $uri, $matches)) {
+                    $params = [];
+                    foreach($matches as $key => $value) {
+                        if(is_string($key)) {
+                            $params[$key] = $value;
+                        }
                     }
+                    $this->callHandler($routeData['handler'], $params);
+                    return;
                 }
-                $this->callHandler($handler, $params);
-                return;
             }
         }
 
