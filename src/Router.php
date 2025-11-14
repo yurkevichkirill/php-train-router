@@ -9,25 +9,20 @@ class Router
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $uri = $this->normalizePath($uri);
 
-        $searchPattern = $this->uriToSearchPattern($uri);
+        if (isset($routes[$method][$uri])) {
+            $handler = $routes[$method][$uri];
+            $this->callHandler($handler, []);
+            return;
+        }
 
-        foreach ($routes as $route) {
-            list($routeMethod, $routePath, $handler) = $route;
-
-            if (strtoupper($routeMethod) !== $method) {
-                continue;
-            }
-
-            if ($this->isRouteCompatible($routePath, $searchPattern, $uri)) {
-                $pattern = $this->pathToPattern($routePath);
+        if (isset($routes[$method])) {
+            foreach ($routes[$method] as $pattern => $handler) {
+                if (strpos($pattern, '#^') !== 0) {
+                    continue;
+                }
 
                 if (preg_match($pattern, $uri, $matches)) {
-                    $params = [];
-                    foreach ($matches as $key => $value) {
-                        if (is_string($key)) {
-                            $params[$key] = $value;
-                        }
-                    }
+                    $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
                     $this->callHandler($handler, $params);
                     return;
                 }
@@ -37,52 +32,12 @@ class Router
         $this->notFound();
     }
 
-    private function uriToSearchPattern($uri) {
-        $parts = explode('/', trim($uri, '/'));
-        $patternParts = [];
-
-        foreach ($parts as $part) {
-            if (empty($part)) continue;
-
-            if (is_numeric($part)) {
-                $patternParts[] = '\d+';
-            } else {
-                $patternParts[] = '[^/]+';
-            }
-        }
-
-        if (empty($patternParts)) {
-            return '#^/$#';
-        }
-
-        return '#^/' . implode('/', $patternParts) . '$#';
-    }
-
-    private function isRouteCompatible($routePath, $searchPattern, $uri) {
-        $uriSegments = count(array_filter(explode('/', $uri)));
-        $routeSegments = count(array_filter(explode('/', $routePath)));
-
-        if ($uriSegments !== $routeSegments) {
-            return false;
-        }
-
-        $routeTemplate = preg_replace('/\{[^}]+\}/', '[^/]+', $routePath);
-        $routeTemplate = '#^' . $routeTemplate . '$#';
-
-        return preg_match($routeTemplate, $uri);
-    }
-
     private function normalizePath($path) {
         $path = preg_replace('#/+#', '/', $path);
         if ($path !== '/' && substr($path, -1) === '/') {
             $path = rtrim($path, '/');
         }
         return $path;
-    }
-
-    private function pathToPattern($path) {
-        $pattern = preg_replace('/\{(\w+)\}/', '(?P<$1>[^/]+)', $path);
-        return '#^' . $pattern . '$#';
     }
 
     private function callHandler($handler, $params) {

@@ -3,25 +3,37 @@
 use App\Controllers\UserController;
 
 return [
-    ['GET', '/', function () {
-        echo json_encode(['message' => 'API is working!']);
-    }],
+    'GET' => [
+        '/' => function () {
+            echo json_encode(['message' => 'API is working!']);
+        },
 
-    ['GET', '/users', [UserController::class, 'index']],
-    ['GET', '/users/{id}', [UserController::class, 'show']],
-    ['POST', '/users', [UserController::class, 'store']],
-    ['PUT', '/users/{id}', [UserController::class, 'update']],
-    ['DELETE', '/users/{id}', [UserController::class, 'delete']],
+        '/users' => [UserController::class, 'index'],
+        '/products' => function () {
+            echo json_encode(['message' => 'Products list']);
+        },
+        '/health' => function () {
+            echo json_encode(['status' => 'OK']);
+        },
 
-    ['GET', '/products', function () {
-        echo json_encode(['message' => 'Products list']);
-    }],
+        '#^/users/(?P<id>[^/]+)$#' => [UserController::class, 'show'],
+        '#^/products/(?P<id>[^/]+)$#' => function ($id) {
+            echo json_encode(['message' => "Product $id"]);
+        },
+        '#^/users/(?P<userId>[^/]+)/posts/(?P<postId>[^/]+)$#' => function ($userId, $postId) {
+            echo json_encode(['user' => $userId, 'post' => $postId]);
+        }
+    ],
 
-    ['GET', '/products/{id}', function ($id) {
-        echo json_encode(['message' => "Product $id"]);
-    }],
+    'POST' => [
+        '/users' => [UserController::class, 'store']
+    ],
 
-    ['GET', '/health', function () {
-        echo json_encode(['status' => 'OK']);
-    }]
+    'PUT' => [
+        '#^/users/(?P<id>[^/]+)$#' => [UserController::class, 'update']
+    ],
+
+    'DELETE' => [
+        '#^/users/(?P<id>[^/]+)$#' => [UserController::class, 'delete']
+    ]
 ];
