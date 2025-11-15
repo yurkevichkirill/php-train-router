@@ -21,7 +21,6 @@ class UserController extends Controller
 
     public function show($id)
     {
-        // Имитация получения пользователя по ID
         $user = [
             'id' => $id,
             'name' => 'User ' . $id,
@@ -38,7 +37,6 @@ class UserController extends Controller
     {
         $input = $this->input();
 
-        // Имитация создания пользователя
         $user = [
             'id' => rand(1000, 9999),
             'name' => $input['name'] ?? 'New User',
