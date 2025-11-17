@@ -6,7 +6,7 @@ use App\Controller;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(): void
     {
         $users = [
             ['id' => 1, 'name' => 'John Doe', 'email' => 'john@example.com'],
@@ -19,7 +19,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show($id): void
     {
         $user = [
             'id' => $id,
@@ -33,7 +33,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function store()
+    public function store(): void
     {
         $input = $this->input();
 

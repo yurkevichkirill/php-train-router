@@ -4,51 +4,55 @@ namespace App;
 
 class Router
 {
-    public function dispatch(array $routes) {
-        $method = $_SERVER['REQUEST_METHOD'];
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    private array $routes = [];
+    public function __construct(array $externalRoutes)
+    {
+        $this->routes = $externalRoutes;
+    }
+
+    public function handler($uri, $method): void
+    {
+        #$method = $_SERVER['REQUEST_METHOD'];
+        $uri = parse_url($uri, PHP_URL_PATH);
         $uri = $this->normalizePath($uri);
 
-        if (isset($routes[$method][$uri])) {
-            $handler = $routes[$method][$uri];
+        if (isset($this->routes[$method][$uri])) {
+            $handler = $this->routes[$method][$uri];
             $this->callHandler($handler, []);
             return;
         }
 
-        $dynamicKey = $this->createDynamicKey($uri);
-        if (isset($routes[$method][$dynamicKey])) {
-            $handler = $routes[$method][$dynamicKey];
-            $param = $this->extractParam($uri);
-            $this->callHandler($handler, [$param]);
+        [$dynamicKey, $param] = $this->createDynamicData($uri);
+
+        $dynamicUri = $this->routes[$method][$dynamicKey] ?? null;
+        if (!is_null($dynamicUri)) {
+            $this->callHandler($dynamicUri, [$param]);
             return;
         }
 
         $this->notFound();
     }
 
-    private function createDynamicKey(string $uri): string
+    private function createDynamicData(string $uri): array
     {
-        $segments = explode('/', trim($uri, '/'));
-
-        if (count($segments) > 1) {
-            $segments[count($segments) - 1] = '{id}';
-            return '/' . implode('/', $segments);
-        }
-
-        return $uri;
+        $segments = explode('/', $uri);
+        $param = $this->extractParam($segments);
+        $segments[count($segments) - 1] = '{#^\w+$#}';
+        return array(implode('/', $segments), $param);
     }
 
-    private function extractParam(string $uri): string
+    private function extractParam(array $segments): string
     {
-        $segments = explode('/', trim($uri, '/'));
         return end($segments);
     }
 
-    private function normalizePath($path) {
+    private function normalizePath($path): string
+    {
         $path = preg_replace('#/+#', '/', $path);
         if ($path !== '/' && substr($path, -1) === '/') {
             $path = rtrim($path, '/');
         }
+
         return $path;
     }
 
@@ -65,7 +69,8 @@ class Router
         }
     }
 
-    private function notFound() {
+    private function notFound(): void
+    {
         http_response_code(404);
         header('Content-Type: application/json');
         echo json_encode(['error' => 'Not Found']);
