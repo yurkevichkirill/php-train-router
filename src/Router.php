@@ -24,9 +24,11 @@ class Router
 
         [$dynamicKey, $param] = $this->createDynamicData($uri);
 
-        $dynamicUri = $this->routes[$method][$dynamicKey] ?? null;
-        if (!is_null($dynamicUri)) {
-            $this->callHandler($dynamicUri, [$param]);
+        $dynamicUris = preg_grep($dynamicKey, array_keys($this->routes["GET"]));
+        if(count($dynamicUris) === 1) {
+            $dynamicUri = array_values($dynamicUris)[0];
+            $call = $this->routes["GET"][$dynamicUri];
+            $this->callHandler($call, [$param]);
             return;
         }
 
@@ -37,8 +39,9 @@ class Router
     {
         $segments = explode('/', $uri);
         $param = $this->extractParam($segments);
-        $segments[count($segments) - 1] = '{#^\w+$#}';
-        return array(implode('/', $segments), $param);
+        $segments[count($segments) - 1] = '\{\w+\}';
+        $dynamicKey = "#^" . implode('/', $segments) . "$#";
+        return array($dynamicKey, $param);
     }
 
     private function extractParam(array $segments): string

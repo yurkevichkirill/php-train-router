@@ -16,8 +16,8 @@ return [
             echo json_encode(['status' => 'OK']);
         },
 
-        '/users/{#^\w+$#}' => [UserController::class, 'show'],
-        '/products/{#^\w+$#}' => function ($title) {
+        '/users/{id}' => [UserController::class, 'show'],
+        '/products/{title}' => function ($title) {
             echo json_encode(['message' => "Product $title"]);
         }
     ],
@@ -27,10 +27,10 @@ return [
     ],
 
     'PUT' => [
-        '/users/{#^\w+$#}' => [UserController::class, 'update']
+        '/users/{id}' => [UserController::class, 'update']
     ],
 
     'DELETE' => [
-        '/users/{#^\w+$#}' => [UserController::class, 'delete']
+        '/users/{id}' => [UserController::class, 'delete']
     ]
 ];

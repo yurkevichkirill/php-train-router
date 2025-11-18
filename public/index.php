@@ -12,5 +12,5 @@ $router = new Router($routes);
 //$router->handler('http://localhost/users', 'GET');
 //$router->handler('http://localhost/users/1', 'GET');
 
-$router->handler('http://localhost/users/1', 'GET');
+$router->handler('http://localhost/products/shoes', 'GET');
 
