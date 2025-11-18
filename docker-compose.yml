@@ -36,7 +36,6 @@ services:
       - XDEBUG_CONFIG=${XDEBUG_CONFIG}
       - XDEBUG_CLIENT_HOST=${XDEBUG_CLIENT_HOST}
       - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
-
     networks:
       - app-network
 
