@@ -2,10 +2,14 @@
 
 namespace App\Controllers;
 
-use App\Controller;
+use App\Attributes\Delete;
+use App\Attributes\Get;
+use App\Attributes\Post;
+use App\Attributes\Put;
 
-class UserController extends Controller
+class UserController extends \App\Controller
 {
+    #[Get("/")]
     public function index(): void
     {
         $users = [
@@ -19,6 +23,7 @@ class UserController extends Controller
         ]);
     }
 
+    #[Get("/users/{id}")]
     public function show($id): void
     {
         $user = [
@@ -33,6 +38,7 @@ class UserController extends Controller
         ]);
     }
 
+    #[Post("/")]
     public function store(): void
     {
         $input = $this->input();
@@ -48,5 +54,17 @@ class UserController extends Controller
             'message' => 'User created',
             'data' => $user
         ], 201);
+    }
+
+    #[Put("/")]
+    public function update(): void
+    {
+
+    }
+
+    #[DELETE("/")]
+    public function remove(): void
+    {
+
     }
 }
