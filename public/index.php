@@ -8,7 +8,7 @@ $routes = require __DIR__ . '/../src/routes.php';
 
 $router = new Router();
 
-$router->registerFromController([\App\Controllers\UserController::class]);
+$router->initializeControllers();
 
 echo "<pre>";
 var_dump($router->routes);

@@ -8,19 +8,46 @@ class Router
 {
     public array $routes = [];
 
-    public function registerFromController($controllers): void
+    public function initializeControllers(): void
     {
-        foreach($controllers as $controller) {
-            $reflectionController = new \ReflectionClass($controller);
-            foreach($reflectionController->getMethods() as $method) {
-                    $attributes = $method->getAttributes(Route::class, \ReflectionAttribute::IS_INSTANCEOF);
-                foreach($attributes as $attribute) {
-                    $route = $attribute->newInstance();
+        $controllerFiles = $this->getControllerFiles("/Controllers");
+        $controllerClasses = array_map(fn($controllerFile) => $this->controllerFileToClass($controllerFile), $controllerFiles);
 
-                    $this->register($route->method, $route->routePath, [$controller, $method->getName()]);
-                }
+        foreach($controllerClasses as $controller) {
+            $this->registerFromController($controller);
+        }
+    }
+
+    public function registerFromController($controller): void
+    {
+        $reflectionController = new \ReflectionClass($controller);
+        foreach($reflectionController->getMethods() as $method) {
+                $attributes = $method->getAttributes(Route::class, \ReflectionAttribute::IS_INSTANCEOF);
+            foreach($attributes as $attribute) {
+                $route = $attribute->newInstance();
+
+                $this->register($route->method, $route->routePath, [$controller, $method->getName()]);
             }
         }
+    }
+
+    public function getControllerFiles($directory, $controllers = []): array
+    {
+        $controllerPaths = array_diff(scandir(__DIR__ . $directory), array('.', '..'));
+        $phpFiles = array_filter($controllerPaths, fn($path) => str_contains($path, ".php"));
+        $phpFullFiles = array_map(fn($file) => $directory . "/" . $file, $phpFiles);
+        $controllers = array_merge($controllers, $phpFullFiles);
+        $folders = array_filter($controllerPaths, fn($path) => !str_contains($path, "."));
+        foreach($folders as $folder) {
+            $directory .= "/" . $folder;
+            $controllers = $this->getControllerFiles($directory, $controllers);
+        }
+        return $controllers;
+    }
+
+    public function controllerFileToClass($controllerFile): string
+    {
+        return "App" . str_replace("/", "\\", str_replace(".php", "", $controllerFile));
     }
 
     public function register($method, $uri, $handler): void

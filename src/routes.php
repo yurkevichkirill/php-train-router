@@ -1,6 +1,6 @@
 <?php
 
-use App\Controllers\UserController;
+use App\Controllers\User\UserController;
 
 return [
     'GET' => [
