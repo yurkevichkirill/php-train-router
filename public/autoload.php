@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 spl_autoload_register(static function ($class_name) {
     $class_name = str_replace('App\\', '', $class_name);
 

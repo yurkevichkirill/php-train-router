@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once 'autoload.php';
 
 use App\Router;
@@ -14,10 +16,6 @@ echo "<pre>";
 var_dump($router->routes);
 echo "</pre>";
 
-//$router->handler('http://localhost/', 'GET');
-//$router->handler('http://localhost/users', 'GET');
-//$router->handler('http://localhost/users/1', 'GET');
 echo "<pre>";
 $router->handler('http://localhost/users/1', 'GET');
 echo "</pre>";
-
